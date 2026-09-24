@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>توصيل طلبات البرك</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#f4fbf7;--card:#ffffff;--card2:#eef8f2;--green:#087f5b;--green2:#0b9b6f;
+  --green3:#dff5ea;--text:#0c241b;--muted:#5d7469;--line:#cce8da;--white:#fff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,#f8fcfa,#eef8f2);color:var(--text);font-family:Tahoma,Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}
+.top{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{max-width:1180px;margin:auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{font-weight:950;font-size:21px;color:var(--green)}
+.pin{color:var(--green);font-size:25px}
+.navlinks{display:flex;gap:5px;overflow:auto}
+.navlinks button{border:0;background:none;color:#365047;padding:9px 10px;white-space:nowrap;border-radius:10px}
+.navlinks button:hover,.navlinks .on{color:var(--green);background:var(--green3);font-weight:900}
+main{max-width:1180px;margin:auto;padding:18px}
+.hero{border:1px solid var(--line);border-radius:28px;overflow:hidden;background:linear-gradient(135deg,#063e2d,#0a7957);padding:30px;color:#fff;position:relative;box-shadow:0 20px 60px rgba(8,127,91,.18)}
+.hero:after{content:"";position:absolute;inset:auto -80px -100px auto;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero h1{font-size:38px;margin:0 0 8px;position:relative;z-index:1}
+.hero h1 span{color:#dff5ea}
+.hero p{color:#e8f8f0;max-width:720px;line-height:1.9;position:relative;z-index:1}
+.heroBtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;position:relative;z-index:1}
+.btn{border:0;border-radius:13px;padding:13px 18px;font-weight:900}
+.primary{background:#fff;color:var(--green)}
+.outline{background:transparent;color:#fff;border:1px solid #fff}
+.dark{background:#0b5e45;color:#fff;border:1px solid #2ca77f}
+.danger{background:#fff;color:var(--green);border:1px solid #fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:14px;box-shadow:0 12px 36px rgba(8,127,91,.08)}
+.card h2{margin:0 0 14px;font-size:20px;color:var(--green)}
+.field{margin:10px 0}
+.field label{display:block;font-size:13px;color:#38554a;margin-bottom:6px}
+.field input,.field select{width:100%;background:#fbfefc;color:var(--text);border:1px solid #bcdccc;border-radius:11px;padding:12px;outline:none}
+.field input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(8,127,91,.10)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.notice{padding:11px 12px;border-radius:12px;background:var(--green3);border:1px solid #b8e2ce;color:#075c42;margin:10px 0}
+.warn{background:#edf8f3;border-color:#b8e2ce;color:#075c42}
+.error{background:#edf8f3;border-color:#9fd4bc;color:#075c42}
+.price{font-size:30px;font-weight:950;color:var(--green)}
+.muted{color:var(--muted);font-size:13px;line-height:1.7}
+.tabs{display:flex;gap:8px;overflow:auto;margin:14px 0}
+.tabs button{white-space:nowrap}
+.panel{display:none}.panel.active{display:block}
+#map{height:470px;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.map-shell{position:relative}
+.map-tools{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:10px}
+.map-tools input{width:100%;background:#fff;border:1px solid #bcdccc;border-radius:12px;padding:12px;color:var(--text)}
+.map-tools button{border:1px solid var(--line);background:var(--green);color:#fff;border-radius:12px;padding:0 14px;font-weight:900}
+.map-results{position:absolute;top:55px;right:0;left:0;z-index:1001;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 15px 35px rgba(0,0,0,.12);overflow:hidden;display:none}
+.map-results button{display:block;width:100%;text-align:right;border:0;background:#fff;padding:12px 14px;border-bottom:1px solid #edf4ef;color:var(--text)}
+.map-results button:hover{background:var(--green3)}
+.order{border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0;background:#fbfefc}
+.orderTop{display:flex;justify-content:space-between;gap:10px}
+.badge{font-size:12px;padding:5px 8px;border-radius:99px;background:var(--green3);color:var(--green);font-weight:900}
+.driver-card{display:grid;gap:10px}
+.required{color:var(--green);font-size:11px;font-weight:900}
+.steps{display:flex;justify-content:space-between;gap:6px;margin:15px 0}
+.step{flex:1;text-align:center;color:#789087;font-size:12px}
+.dot{width:25px;height:25px;border-radius:50%;border:2px solid #9fcbb8;margin:0 auto 5px;display:grid;place-items:center}
+.step.done{color:var(--green)}.step.done .dot{border-color:var(--green);color:var(--green)}
+footer{text-align:center;color:#6b8278;padding:28px;font-size:12px}
+.ai-widget{display:inline-block;background:#fff;color:var(--green);border:1px solid #b8e2ce;border-radius:16px;padding:10px 12px;min-width:250px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+.ai-widget.disabled{opacity:.72}
+.ai-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:950}
+.ai-x{width:32px;height:32px;border-radius:50%;border:0;background:var(--green);color:#fff;font-weight:950}
+.ai-state{font-size:11px;color:#4b685c;margin-top:5px}
+.ai-widget.small{min-width:190px}
+.ai-large{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.ai-big{font-size:46px}.ai-chat{margin-top:15px}
+.ai-input{width:100%;background:#fff;color:var(--text);border:1px solid #bcdccc;border-radius:11px;padding:12px}
+.notification{display:flex;align-items:center;gap:12px;border:1px solid #b8e2ce;background:#f4fbf7;border-radius:15px;padding:13px;margin:9px 0}
+.notification .bell{font-size:25px}.notification small{color:#6b8278}.notification .btn{margin-right:auto}
+.notification.read{opacity:.65}.notif-badge{background:var(--green);color:white;border-radius:99px;padding:4px 9px;font-weight:900}
+.map-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.map-chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--green);font-size:12px;font-weight:800}
+@media(max-width:760px){
+  .grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.hero h1{font-size:30px}
+  .nav{align-items:flex-start;flex-direction:column}.navlinks{width:100%}
+  .map-tools{grid-template-columns:1fr 1fr}.map-tools input{grid-column:1/-1}
+  #map{height:420px}
+}
+</style>
+</head>
+<body>
+<div id="gate" style="position:fixed;inset:0;background:#02070dcc;z-index:5000;display:flex;align-items:center;justify-content:center;padding:18px"><div class="card" style="max-width:430px;width:100%;text-align:center"><div style="font-size:48px">📍</div><h2>توصيل طلبات البرك</h2><p class="muted">الخدمة متاحة داخل نطاق البرك فقط. اسمح بالموقع للتحقق قبل إنشاء الطلب.</p><button class="btn primary" style="width:100%" onclick="checkLocation()">تحديد موقعي والتحقق</button><div id="gateMsg" class="muted" style="margin-top:10px"></div></div></div>
+<header class="top"><div class="nav"><div class="brand"><span class="pin">📍</span> توصيل طلبات</div><div class="navlinks"><button class="on" onclick="show('home')">الرئيسية</button><button onclick="show('customer')">تسجيل العميل</button><button onclick="show('driver')">تسجيل المندوب</button><button onclick="show('orders')">طلباتي</button><button onclick="show('driverAlerts')">🔔 إشعارات</button><button onclick="show('assistant')">🤖 المساعد</button></div></div></header>
+<main>
+<section id="home" class="panel active">
+<div class="hero"><div class="ai-widget" id="aiWidget"><div class="ai-title"><span>🤖 الذكاء الاصطناعي</span><button class="ai-x" onclick="toggleAI()" aria-label="إغلاق الذكاء الاصطناعي">✕</button></div><div class="ai-state" id="aiState">مفعّل — اضغط ✕ إذا لا تريد أسئلة المساعد</div></div><h1 style="margin-top:14px">توصيل <span>طلبات</span></h1><p>جميع طلباتك... نصلها لك. اختر مكان الاستلام والتسليم من الخريطة، وسيتم حساب المسافة ورسوم التوصيل تلقائيًا.</p><div class="heroBtns"><button class="btn primary" onclick="show('customer')">تسجيل العميل</button><button class="btn outline" onclick="show('driver')">تسجيل المندوب</button></div></div>
+<div class="grid"><div class="card"><h2>إنشاء طلب جديد</h2><div class="field"><label>نوع الطلب</label><select id="serviceType"><option>مطاعم</option><option>متاجر</option><option>صيدليات</option><option>بقالة</option><option>أخرى</option></select></div><div class="field"><label>ملاحظات الطلب</label><input id="orderNote" placeholder="مثال: استلام من الباب الرئيسي"></div><div class="notice">اضغط على الخريطة لتحديد <b>مكان الاستلام</b> ثم اضغط مرة ثانية لتحديد <b>مكان التسليم</b>.</div><div id="pointStatus" class="muted">لم يتم اختيار الموقعين بعد.</div></div>
+<div class="card"><h2>ملخص التوصيل</h2><div class="muted">المسافة</div><div id="distance" class="price">0 كم</div><div class="muted">رسوم التوصيل</div><div id="fee" class="price">0 ر.س</div><div id="orderMsg" class="muted"></div><button class="btn primary" style="width:100%;margin-top:12px" onclick="createOrder()">تأكيد طلب التوصيل</button></div></div>
+<div class="card">
+  <h2>📍 اختر الأماكن من الخريطة</h2>
+  <p class="muted">الخريطة تعرض أسماء الأماكن والمعالم المتاحة في بيانات الخرائط. يمكنك البحث باسم مطعم أو مسجد أو كورنيش، ثم اختيار النتيجة، أو الضغط مباشرة على الخريطة.</p>
+  <div class="map-shell">
+    <div class="map-tools">
+      <input id="placeSearch" placeholder="ابحث عن مطعم، مسجد، كورنيش، متجر...">
+      <button type="button" onclick="searchPlaces()">بحث</button>
+      <button type="button" onclick="useMyLocation()">موقعي</button>
+    </div>
+    <div id="mapResults" class="map-results"></div>
+    <div id="map"></div>
+  </div>
+  <div class="map-legend">
+    <span class="map-chip">🟢 اضغط أولًا = الاستلام</span>
+    <span class="map-chip">📦 اضغط ثانيًا = التسليم</span>
+    <button class="map-chip" type="button" onclick="openSelectedInGoogleMaps()">فتح النقطة في خرائط Google</button>
+  </div>
+</div></section>
+<section id="customer" class="panel"><div class="card"><h2>تسجيل العميل</h2><p class="muted">أنشئ حسابك لطلب التوصيل ومتابعة الطلبات.</p><div class="row"><div class="field"><label>الاسم الكامل</label><input id="cName"></div><div class="field"><label>رقم الهاتف</label><input id="cPhone" type="tel"></div></div><div class="row"><div class="field"><label>البريد الإلكتروني</label><input id="cEmail" type="email"></div><div class="field"><label>المنطقة</label><input id="cArea" value="البرك"></div></div><div class="field"><label>رمز التحقق OTP</label><input id="cOtp" placeholder="سيتم إرساله عند ربط الخادم"><div class="required">التحقق الحقيقي بالرسائل يحتاج ربط خدمة OTP.</div></div><button class="btn primary" onclick="saveCustomer()">تسجيل العميل</button><div id="customerMsg"></div></div></section>
+<section id="driver" class="panel"><div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2>تسجيل المندوب</h2><div class="ai-widget small" id="aiWidgetDriver"><div class="ai-title"><span>🤖 الذكاء الاصطناعي</span><button class="ai-x" onclick="toggleAI()">✕</button></div><div class="ai-state">مفعّل</div></div></div><p class="muted">لضمان استلام مستحقات المندوب، <b>رقم الحساب البنكي / IBAN مطلوب</b>.</p><div class="row"><div class="field"><label>الاسم الكامل</label><input id="dName"></div><div class="field"><label>رقم الهاتف</label><input id="dPhone" type="tel"></div></div><div class="row"><div class="field"><label>رقم الهوية</label><input id="dId"></div><div class="field"><label>نوع المركبة</label><select id="dVehicle"><option>دراجة نارية</option><option>سكوتر</option><option>سيارة</option><option>دراجة</option></select></div></div><div class="row"><div class="field"><label>المنطقة</label><input id="dArea" value="البرك"></div><div class="field"><label>رقم الحساب البنكي (IBAN) <span class="required">* مطلوب</span></label><input id="dIban" placeholder="SA..." required></div></div><div class="field"><label>البريد الإلكتروني</label><input id="dContact"></div><div class="notice warn">سيتم إرسال بيانات المندوب للمراجعة. لا يصبح الحساب فعالًا حتى تتم الموافقة من الإدارة.</div><button class="btn primary" onclick="saveDriver()">إرسال طلب التسجيل</button><div id="driverMsg"></div></div></section>
+<section id="assistant" class="panel"><div class="card"><div class="ai-large"><div><div class="ai-big">🤖</div><h2>المساعد الذكي</h2><p class="muted">يمكنه الإجابة عن أسئلة العميل والمندوب حول الطلبات والتوصيل. إذا لم ترد استخدامه اضغط علامة ✕.</p></div><button class="btn primary" onclick="toggleAI()" id="aiToggleBtn">إيقاف المساعد ✕</button></div><div id="aiChat" class="ai-chat"><div class="order"><b>المساعد:</b> مرحبًا! كيف أساعدك في طلب التوصيل؟</div><div class="row"><input id="aiInput" class="ai-input" placeholder="اكتب سؤالك..."><button class="btn primary" onclick="askAI()">إرسال</button></div></div></div></section>
+<section id="driverAlerts" class="panel"><div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>🔔 إشعارات المندوب</h2><span class="notif-badge" id="notifCount">0</span></div><p class="muted">عند وصول طلب جديد سيظهر تنبيه للمندوب على جهازه عندما يكون الموقع متصلًا بالخادم الحقيقي.</p><div id="driverNotifications"><div class="muted">لا توجد إشعارات جديدة.</div></div></div></section>
+<section id="orders" class="panel"><div class="card"><h2>طلباتي</h2><div class="steps"><div class="step done"><div class="dot">✓</div>تم الطلب</div><div class="step"><div class="dot">🚚</div>قيد التوصيل</div><div class="step"><div class="dot">✓</div>تم التسليم</div></div><div id="ordersList"><div class="muted">لا توجد طلبات محفوظة على هذا الجهاز.</div></div></div></section>
+</main><footer>توصيل طلبات البرك — خريطة تفاعلية بأسماء الأماكن والبحث عن المعالم. فتح خرائط Google متاح للنقطة المختارة. الدفع الحقيقي وOTP والتتبع الحي تحتاج خادمًا آمنًا.</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const CENTER={lat:18.2167,lng:41.5350},RADIUS=18;let map,pickup,dropoff,p1,p2;
+function km(a,b){const R=6371,d1=(b.lat-a.lat)*Math.PI/180,d2=(b.lng-a.lng)*Math.PI/180,x=Math.sin(d1/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(d2/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+function checkLocation(){const m=document.getElementById('gateMsg');if(!navigator.geolocation){m.textContent='المتصفح لا يدعم الموقع.';return}m.textContent='جارٍ التحقق...';navigator.geolocation.getCurrentPosition(p=>{const x={lat:p.coords.latitude,lng:p.coords.longitude};if(km(x,CENTER)<=RADIUS){document.getElementById('gate').style.display='none';map&&map.setView([x.lat,x.lng],14)}else m.textContent='🚫 الخدمة متاحة داخل البرك فقط.'},()=>m.textContent='اسمح بالموقع من إعدادات Chrome ثم حاول مرة أخرى.',{enableHighAccuracy:true,timeout:12000})}
+function show(id){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.navlinks button').forEach(x=>x.classList.remove('on'));window.scrollTo({top:0,behavior:'smooth'})}
+function feeFor(d){if(d<=3)return 10;if(d<=5)return 13;if(d<=7)return 16;if(d<=10)return 20;if(d<=15)return 27;return 27+Math.ceil(d-15)*2}
+function update(){if(!pickup||!dropoff)return;const d=km(pickup,dropoff);document.getElementById('distance').textContent=d.toFixed(2)+' كم';document.getElementById('fee').textContent=feeFor(d)+' ر.س';document.getElementById('pointStatus').textContent='تم تحديد الاستلام والتسليم. راجع الرسوم ثم أكد الطلب.'}
+function initMap(){
+  map=L.map('map',{zoomControl:true}).setView([CENTER.lat,CENTER.lng],14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,
+    attribution:'© OpenStreetMap contributors'
+  }).addTo(map);
+  addSearchLayer();
+  map.on('click',e=>{
+    const point={lat:e.latlng.lat,lng:e.latlng.lng};
+    if(!pickup){
+      pickup=point;p1=L.marker(e.latlng).addTo(map).bindPopup('مكان الاستلام').openPopup();
+      document.getElementById('pointStatus').textContent='تم تحديد الاستلام. اضغط على الخريطة مرة ثانية لتحديد التسليم.';
+    }else if(!dropoff){
+      dropoff=point;p2=L.marker(e.latlng).addTo(map).bindPopup('مكان التسليم').openPopup();update();
+    }else{
+      if(p1)map.removeLayer(p1);if(p2)map.removeLayer(p2);
+      pickup=point;dropoff=null;p1=L.marker(e.latlng).addTo(map).bindPopup('مكان الاستلام').openPopup();
+      document.getElementById('pointStatus').textContent='تم تغيير مكان الاستلام. حدد مكان التسليم الآن.';
+      document.getElementById('distance').textContent='0 كم';document.getElementById('fee').textContent='0 ر.س';
+    }
+  });
+  const search=document.getElementById('placeSearch');
+  search.addEventListener('keydown',e=>{if(e.key==='Enter')searchPlaces()});
+}
+
+let searchLayer=L.layerGroup();
+function addSearchLayer(){searchLayer.addTo(map)}
+function searchPlaces(){
+  const q=document.getElementById('placeSearch').value.trim();
+  const box=document.getElementById('mapResults');
+  if(!q){box.style.display='none';return}
+  box.innerHTML='<div style="padding:12px;color:#087f5b">جاري البحث عن المكان...</div>';
+  box.style.display='block';
+  fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&accept-language=ar&q='+encodeURIComponent(q+' البرك السعودية'),{
+    headers:{'Accept':'application/json'}
+  }).then(r=>r.json()).then(results=>{
+    if(!results.length){box.innerHTML='<div style="padding:12px;color:#5d7469">لم يتم العثور على المكان. جرّب اسمًا آخر.</div>';return}
+    box.innerHTML=results.map((x,i)=>`<button type="button" onclick="selectSearchResult(${i})">${escapeHtml(x.display_name)}</button>`).join('');
+    window._placeResults=results;
+  }).catch(()=>{
+    box.innerHTML='<div style="padding:12px;color:#087f5b">تعذر البحث الآن. يمكنك الضغط مباشرة على الخريطة.</div>';
+  });
+}
+function selectSearchResult(i){
+  const x=window._placeResults[i];
+  const lat=+x.lat,lng=+x.lon;
+  map.setView([lat,lng],17);
+  searchLayer.clearLayers();
+  L.marker([lat,lng]).addTo(searchLayer).bindPopup('<b>'+escapeHtml(x.name||'المكان')+'</b><br>'+escapeHtml(x.display_name)).openPopup();
+  const box=document.getElementById('mapResults');box.style.display='none';
+  // Selecting a searched place follows the same two-step pickup/dropoff flow.
+  if(!pickup){
+    pickup={lat,lng}; p1=L.marker([lat,lng]).addTo(map).bindPopup('مكان الاستلام: '+escapeHtml(x.name||'المكان')).openPopup();
+  }else if(!dropoff){
+    dropoff={lat,lng}; p2=L.marker([lat,lng]).addTo(map).bindPopup('مكان التسليم: '+escapeHtml(x.name||'المكان')).openPopup();
+    update();
+  }else{
+    pickup=null;dropoff=null;
+    if(p1)map.removeLayer(p1); if(p2)map.removeLayer(p2);
+    pickup={lat,lng}; p1=L.marker([lat,lng]).addTo(map).bindPopup('مكان الاستلام: '+escapeHtml(x.name||'المكان')).openPopup();
+    document.getElementById('pointStatus').textContent='تم بدء اختيار جديد: حدد الآن مكان التسليم.';
+    document.getElementById('distance').textContent='0 كم';document.getElementById('fee').textContent='0 ر.س';
+  }
+}
+function useMyLocation(){
+  if(!navigator.geolocation){return}
+  navigator.geolocation.getCurrentPosition(p=>{
+    map.setView([p.coords.latitude,p.coords.longitude],17);
+    L.circleMarker([p.coords.latitude,p.coords.longitude],{radius:9,color:'#087f5b',fillColor:'#0b9b6f',fillOpacity:.9}).addTo(searchLayer).bindPopup('موقعك الحالي').openPopup();
+  });
+}
+function openSelectedInGoogleMaps(){
+  const x=dropoff||pickup;
+  if(!x){alert('حدد نقطة على الخريطة أولًا.');return}
+  window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.lat+','+x.lng),'_blank');
+}
+
+function createOrder(){if(!pickup||!dropoff){document.getElementById('orderMsg').innerHTML='<div class="error">حدد مكان الاستلام والتسليم على الخريطة أولًا.</div>';return}const d=km(pickup,dropoff),order={id:Date.now().toString().slice(-5),type:serviceType.value,d:d.toFixed(2),fee:feeFor(d),note:orderNote.value,status:'تم الطلب',time:new Date().toLocaleString('ar-SA')};const arr=JSON.parse(localStorage.getItem('orders')||'[]');arr.unshift(order);localStorage.setItem('orders',JSON.stringify(arr));const ns=JSON.parse(localStorage.getItem('driverNotifications')||'[]');ns.unshift({id:order.id,title:'طلب جديد!',body:'يوجد طلب جديد يحتاج إلى مندوب',time:order.time,orderId:order.id,read:false});localStorage.setItem('driverNotifications',JSON.stringify(ns));renderOrders();renderNotifications();notifyDriver(order);document.getElementById('orderMsg').innerHTML='<div class="notice">✅ تم إنشاء الطلب #'+order.id+' وإضافة إشعار للمندوب.</div>';show('orders')}
+function renderOrders(){const a=JSON.parse(localStorage.getItem('orders')||'[]'),el=document.getElementById('ordersList');if(!a.length){el.innerHTML='<div class="muted">لا توجد طلبات محفوظة على هذا الجهاز.</div>';return}el.innerHTML=a.map(o=>`<div class="order"><div class="orderTop"><b>الطلب #${o.id}</b><span class="badge">${o.status}</span></div><div class="muted">${o.type} — ${o.d} كم — ${o.fee} ر.س</div><div class="muted">${o.time}</div></div>`).join('')}
+function saveCustomer(){localStorage.setItem('customer',JSON.stringify({name:cName.value,phone:cPhone.value,email:cEmail.value,area:cArea.value}));document.getElementById('customerMsg').innerHTML='<div class="notice">✅ تم حفظ بيانات العميل على هذا الجهاز.</div>'}
+function saveDriver(){if(!dName.value||!dPhone.value||!dIban.value){document.getElementById('driverMsg').innerHTML='<div class="error">⚠️ الاسم والجوال ورقم IBAN مطلوبة.</div>';return}localStorage.setItem('driver',JSON.stringify({name:dName.value,phone:dPhone.value,id:dId.value,vehicle:dVehicle.value,area:dArea.value,iban:dIban.value,contact:dContact.value,status:'قيد المراجعة'}));document.getElementById('driverMsg').innerHTML='<div class="notice">✅ تم إرسال طلب التسجيل. الحساب بانتظار موافقة الإدارة.</div>'}
+let aiEnabled=localStorage.getItem('aiEnabled')!=='false';function applyAI(){const w=document.getElementById('aiWidget');if(w)w.classList.toggle('disabled',!aiEnabled);const b=document.getElementById('aiToggleBtn');if(b)b.textContent=aiEnabled?'إيقاف المساعد ✕':'تشغيل المساعد 🤖';const s=document.getElementById('aiState');if(s)s.textContent=aiEnabled?'مفعّل — اضغط ✕ إذا لا تريد أسئلة المساعد':'متوقف — المساعد مخفي';}function toggleAI(){aiEnabled=!aiEnabled;localStorage.setItem('aiEnabled',aiEnabled);applyAI();const c=document.getElementById('aiChat');if(c)c.style.display=aiEnabled?'block':'none'}function askAI(){if(!aiEnabled)return;const i=document.getElementById('aiInput');if(!i||!i.value.trim())return;const box=document.getElementById('aiChat');box.insertAdjacentHTML('beforeend','<div class="order"><b>أنت:</b> '+escapeHtml(i.value)+'</div><div class="order"><b>المساعد:</b> أستطيع مساعدتك في حالة الطلب، رسوم التوصيل، وطريقة إنشاء الطلب.</div>');i.value=''}function escapeHtml(x){return x.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}function notifyDriver(order){if('Notification' in window){if(Notification.permission==='granted')new Notification('توصيل طلبات — طلب جديد!',{body:'طلب #'+order.id+' بانتظار المندوب'});else if(Notification.permission!=='denied')Notification.requestPermission()}}function renderNotifications(){const a=JSON.parse(localStorage.getItem('driverNotifications')||'[]'),el=document.getElementById('driverNotifications'),c=document.getElementById('notifCount');if(c)c.textContent=a.filter(x=>!x.read).length;if(!el)return;if(!a.length){el.innerHTML='<div class="muted">لا توجد إشعارات جديدة.</div>';return}el.innerHTML=a.map(n=>`<div class="notification ${n.read?'read':''}"><div class="bell">🔔</div><div><b>${n.title}</b><div>${n.body}</div><small>${n.time}</small></div><button class="btn dark" onclick="markRead('${n.id}')">عرض الطلب</button></div>`).join('')}function markRead(id){const a=JSON.parse(localStorage.getItem('driverNotifications')||'[]');a.forEach(n=>{if(n.id===id)n.read=true});localStorage.setItem('driverNotifications',JSON.stringify(a));renderNotifications();show('orders')}document.addEventListener('DOMContentLoaded',()=>{initMap();renderOrders();renderNotifications();applyAI()});
+</script>
+</body></html>
